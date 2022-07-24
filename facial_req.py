@@ -1,5 +1,8 @@
 #! /usr/bin/python3.9
 # import the necessary packages
+import logging
+import time
+from systemd.journal import JournaldLogHandler 
 from imutils.video import VideoStream
 from imutils.video import FPS
 import face_recognition
@@ -7,12 +10,15 @@ import imutils
 import pickle
 import time
 import cv2
-
+import random
+import os
+from datetime import datetime
+logging.basicConfig(filename='log.log', encoding='utf-8', level=logging.DEBUG)
+logging.info("program started")
 #Initialize 'currentname' to trigger only when a new person is identified.
 currentname = "unknown"
 #Determine faces from encodings.pickle file model created from train_model.py
 encodingsP = "encodings.pickle"
-
 # load the known faces and embeddings along with OpenCV's Haar
 # cascade for face detection
 print("[INFO] loading encodings + face detector...")
@@ -40,7 +46,6 @@ while True:
 	# compute the facial embeddings for each face bounding box
 	encodings = face_recognition.face_encodings(frame, boxes)
 	names = []
-
 	# loop over the facial embeddings
 	for encoding in encodings:
 		# attempt to match each face in the input image to our known
@@ -72,6 +77,11 @@ while True:
 			if currentname != name:
 				currentname = name
 				print(currentname)
+				now = datetime.now()
+				cTime = now.strftime("%H:%M:%S")
+				f = open("logs.txt", "a")
+				f.write(cTime + ': ' + currentname + '\n')
+				f.close()
 
 		# update the list of names
 		names.append(name)
