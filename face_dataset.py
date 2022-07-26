@@ -12,7 +12,7 @@ face_detector=cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 face_id= input('\n enter user id end press <return> ==>')
 print('\n [info] intalizing face capture')
 
-count=0
+count=10
 
 while(True):
     ret,img=cam.read()
@@ -24,12 +24,12 @@ while(True):
         cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
         count+=1
         
-        cv2.imwrite("/home/pi/Desktop/faical_product/dataset/User."+str(face_id)+'.'+str(count)+".jpg",gray[y: y+h, x:x+w])
+        cv2.imwrite("/home/pi/facial-recognition-main/dataset/Shoaib."+str(face_id)+'.'+str(count)+".jpg",gray[y: y+h, x:x+w])
         cv2.imshow('image',img)
     k=cv2.waitKey(100)& 0xff
     if k==27:
         break
-    elif count >=30:
+    elif count >=90:
         break
     
 print("\n [INFO] Exiting program and cleanup stuff")

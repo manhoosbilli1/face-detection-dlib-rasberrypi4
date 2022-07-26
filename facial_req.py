@@ -1,6 +1,7 @@
 #! /usr/bin/python3.9
 # import the necessary packages
 import logging
+from queue import Empty
 import time
 from tkinter import PROJECTING
 from systemd.journal import JournaldLogHandler 
@@ -51,8 +52,10 @@ fps = FPS().start()
  
 # loop over frames from the video file stream
 projectBucket = db.child("rasp-data")
+done = False
+
+
 while True:
-	done = False
 	# grab the frame from the threaded video stream and resize it
 	# to 500px (to speedup processing)
 	ProjectBucket = db.child("rasp-data")                            
@@ -91,29 +94,9 @@ while True:
 				# of votes (note: in the event of an unlikely tie Python
 				# will select first entry in the dictionary)
 				name = max(counts, key=counts.get)
-
-				#If someone in your dataset is identified, print their name on the screen
-				if currentname != name:
-					if name == "UNKNOWN" or name == "unknown":
-						projectBucket.child("rasp-data").child("NAME_WHO_DETECTED").set("UNKNOWN")
-						projectBucket.child("rasp-data").child("STATUS").set("NOT_DETECTED")
-					else:
-						currentname = name
-						print(currentname)
-						now = datetime.now()
-						cTime = now.strftime("%H:%M:%S")
-						f = open("logs.txt", "a")
-						f.write(cTime + ': ' + currentname + '\n')
-						f.close()
-						projectBucket.child("rasp-data").child("CAMERA").set("OFF")
-						projectBucket.child("rasp-data").child("NAME_WHO_DETECTED").set(name)
-						projectBucket.child("rasp-data").child("STATUS").set("DETECTED")
-						currentname = "UNKNOWN"
-						done = True
-
-
-					
-
+				#make sure takes input only once. 
+				#detect unknown 
+				#detect person 
 			# update the list of names
 			names.append(name)
 
@@ -125,8 +108,29 @@ while True:
 			y = top - 15 if top - 15 > 15 else top + 15
 			cv2.putText(frame, name, (left, y), cv2.FONT_HERSHEY_SIMPLEX,
 				.8, (0, 255, 255), 2)
-
-
+			#now make sure it only detects once
+			prevName = ""
+			if name != prevName:
+				if name == "UNKNOWN" or name == "Unknown":
+					print("This is inside non recognized function" + ": " + name)
+					projectBucket.child("rasp-data").child("NAME_WHO_DETECTED").set("UNKNOWN")
+					projectBucket.child("rasp-data").child("STATUS").set("NOT_DETECTED")
+					print("person not recognized")
+					prevName = name
+				else:
+					prevName = name 
+					currentname = name
+					now = datetime.now()
+					cTime = now.strftime("%H:%M:%S")
+					f = open("logs.txt", "a")
+					f.write(cTime + ': ' + name + '\n')
+					f.close()
+					projectBucket.child("rasp-data").child("CAMERA").set("OFF")
+					projectBucket.child("rasp-data").child("NAME_WHO_DETECTED").set(name)
+					projectBucket.child("rasp-data").child("STATUS").set("DETECTED")
+					done = True
+					print("This is inside recognized function" + ": " + name)
+				
 		# display the image to our screen
 		cv2.imshow("Facial Recognition is Running", frame)
 		if done == True:
